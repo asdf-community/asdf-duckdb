@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-# TODO: Ensure this is the correct GitHub homepage where releases can be downloaded for duckdb.
+# This is the GitHub homepage where releases can be downloaded for duckdb.
 GH_REPO="https://github.com/duckdb/duckdb"
 TOOL_NAME="duckdb"
 TOOL_TEST="duckdb --version"
@@ -31,7 +31,7 @@ list_github_tags() {
 }
 
 list_all_versions() {
-	# TODO: Adapt this. By default we simply list the tag names from GitHub releases.
+	# By default we simply list the tag names from GitHub releases.
 	# Change this function if duckdb has other means of determining installable versions.
 	list_github_tags
 }
@@ -41,8 +41,7 @@ download_release() {
 	version="$1"
 	filename="$2"
 
-	# TODO: Adapt the release URL convention for duckdb
-	url="$GH_REPO/archive/v${version}.tar.gz"
+	url="$(get_url)"
 
 	echo "* Downloading $TOOL_NAME release $version..."
 	curl "${curl_opts[@]}" -o "$filename" -C - "$url" || fail "Could not download $url"
@@ -59,9 +58,8 @@ install_version() {
 
 	(
 		mkdir -p "$install_path"
-		cp -r "$ASDF_DOWNLOAD_PATH"/* "$install_path"
+		cp -R "$ASDF_DOWNLOAD_PATH"/* "$install_path"
 
-		# TODO: Assert duckdb executable exists.
 		local tool_cmd
 		tool_cmd="$(echo "$TOOL_TEST" | cut -d' ' -f1)"
 		test -x "$install_path/$tool_cmd" || fail "Expected $install_path/$tool_cmd to be executable."
@@ -71,4 +69,34 @@ install_version() {
 		rm -rf "$install_path"
 		fail "An error occurred while installing $TOOL_NAME $version."
 	)
+}
+
+get_url() {
+	# duckdb provides:
+	#  os: linux | osx | windows
+	#  arch:
+	#    linux: aarch64 | amd64 | i386
+	#    osx: universal
+	#    windows: amd64 | i386
+	local os arch
+	if [ "$(uname)" == "Linux" ]; then
+		os="linux"
+		if [ "$(uname -m)" == "x86_64" ]; then
+			arch="amd64"
+		elif [ "$(uname -m)" == "arm*"]; then
+			# Warning: untested
+			arch="aarch64"
+		elif [ "$(uname -m)" == "aarch*"]; then
+			# Warning: untested
+			arch="aarch64"
+		else
+			# Warning: untested
+			arch="i386"
+		fi
+	elif [ "$(uname)" == "Darwin" ]; then
+		os="osx"
+		arch="universal"
+	fi
+	# asdf-duckdb plugin does not support windows
+	echo "$GH_REPO/releases/download/v${version}/duckdb_cli-${os}-${arch}.zip"
 }
