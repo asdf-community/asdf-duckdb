@@ -1,0 +1,60 @@
+<div align="center">
+
+# asdf-duckdb [![Build](https://github.com/JesseStimpson/asdf-duckdb/actions/workflows/build.yml/badge.svg)](https://github.com/JesseStimpson/asdf-duckdb/actions/workflows/build.yml) [![Lint](https://github.com/JesseStimpson/asdf-duckdb/actions/workflows/lint.yml/badge.svg)](https://github.com/JesseStimpson/asdf-duckdb/actions/workflows/lint.yml)
+
+[duckdb](https://duckdb.org/docs/) plugin for the [asdf version manager](https://asdf-vm.com).
+
+</div>
+
+# Contents
+
+- [Dependencies](#dependencies)
+- [Install](#install)
+- [Contributing](#contributing)
+- [License](#license)
+
+# Dependencies
+
+**TODO: adapt this section**
+
+- `bash`, `curl`, `tar`: generic POSIX utilities.
+- `SOME_ENV_VAR`: set this environment variable in your shell config to load the correct version of tool x.
+
+# Install
+
+Plugin:
+
+```shell
+asdf plugin add duckdb
+# or
+asdf plugin add duckdb https://github.com/JesseStimpson/asdf-duckdb.git
+```
+
+duckdb:
+
+```shell
+# Show all installable versions
+asdf list-all duckdb
+
+# Install specific version
+asdf install duckdb latest
+
+# Set a version globally (on your ~/.tool-versions file)
+asdf global duckdb latest
+
+# Now duckdb commands are available
+duckdb --version
+```
+
+Check [asdf](https://github.com/asdf-vm/asdf) readme for more instructions on how to
+install & manage versions.
+
+# Contributing
+
+Contributions of any kind welcome! See the [contributing guide](contributing.md).
+
+[Thanks goes to these contributors](https://github.com/JesseStimpson/asdf-duckdb/graphs/contributors)!
+
+# License
+
+See [LICENSE](LICENSE) © [Jesse Stimpson](https://github.com/JesseStimpson/)
