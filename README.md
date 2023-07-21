@@ -1,6 +1,6 @@
 <div align="center">
 
-# asdf-duckdb [![Build](https://github.com/JesseStimpson/asdf-duckdb/actions/workflows/build.yml/badge.svg)](https://github.com/JesseStimpson/asdf-duckdb/actions/workflows/build.yml) [![Lint](https://github.com/JesseStimpson/asdf-duckdb/actions/workflows/lint.yml/badge.svg)](https://github.com/JesseStimpson/asdf-duckdb/actions/workflows/lint.yml)
+# asdf-duckdb [![Build](https://github.com/asdf-community/asdf-duckdb/actions/workflows/build.yml/badge.svg)](https://github.com/asdf-community/asdf-duckdb/actions/workflows/build.yml) [![Lint](https://github.com/asdf-community/asdf-duckdb/actions/workflows/lint.yml/badge.svg)](https://github.com/asdf-community/asdf-duckdb/actions/workflows/lint.yml)
 
 [duckdb](https://duckdb.org/docs/) plugin for the [asdf version manager](https://asdf-vm.com).
 
@@ -22,9 +22,7 @@
 Plugin:
 
 ```shell
-asdf plugin add duckdb
-# or
-asdf plugin add duckdb https://github.com/JesseStimpson/asdf-duckdb.git
+asdf plugin add duckdb https://github.com/asdf-community/asdf-duckdb.git
 ```
 
 duckdb:
@@ -50,7 +48,7 @@ install & manage versions.
 
 Contributions of any kind welcome! See the [contributing guide](contributing.md).
 
-[Thanks goes to these contributors](https://github.com/JesseStimpson/asdf-duckdb/graphs/contributors)!
+[Thanks goes to these contributors](https://github.com/asdf-community/asdf-duckdb/graphs/contributors)!
 
 # License
 
