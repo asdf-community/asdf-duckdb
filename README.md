@@ -29,13 +29,13 @@ duckdb:
 
 ```shell
 # Show all installable versions
-asdf list-all duckdb
+asdf list all duckdb
 
 # Install specific version
 asdf install duckdb latest
 
 # Set a version globally (on your ~/.tool-versions file)
-asdf global duckdb latest
+asdf set -u duckdb latest
 
 # Now duckdb commands are available
 duckdb --version
