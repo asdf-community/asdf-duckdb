@@ -37,14 +37,20 @@ list_all_versions() {
 }
 
 download_release() {
-	local version filename url
+	local version filename urls url
 	version="$1"
 	filename="$2"
 
-	url="$(get_url)"
+	urls="$(get_urls "$version")" || fail "unsupported platform: $(uname -s) $(uname -m)"
 
 	echo "* Downloading $TOOL_NAME release $version..."
-	curl "${curl_opts[@]}" -o "$filename" -C - "$url" || fail "Could not download $url"
+	for url in $urls; do
+		if curl "${curl_opts[@]}" -o "$filename" -C - "$url"; then
+			return 0
+		fi
+		rm -f "$filename"
+	done
+	fail "Could not download $TOOL_NAME $version. Tried: $(echo "$urls" | xargs echo)"
 }
 
 install_version() {
@@ -71,32 +77,36 @@ install_version() {
 	)
 }
 
-get_url() {
-	# duckdb provides:
-	#  os: linux | osx | windows
-	#  arch:
-	#    linux: aarch64 | amd64 | i386
-	#    osx: universal
-	#    windows: amd64 | i386
-	local os arch
-	if [ "$(uname)" == "Linux" ]; then
+# Print one candidate download URL per line for the current platform, most
+# likely first. Returns non-zero on an unsupported platform.
+#
+# duckdb CLI release assets:
+#  os: linux | osx | windows
+#  arch:
+#    linux: amd64 | arm64 (named aarch64 before v1.3.0)
+#    osx: universal
+# asdf-duckdb does not support windows.
+get_urls() {
+	local version os archs arch
+	version="$1"
+
+	case "$(uname -s)" in
+	Linux)
 		os="linux"
-		if [ "$(uname -m)" == "x86_64" ]; then
-			arch="amd64"
-		elif [ "$(uname -m)" == "arm*"]; then
-			# Warning: untested
-			arch="aarch64"
-		elif [ "$(uname -m)" == "aarch*"]; then
-			# Warning: untested
-			arch="aarch64"
-		else
-			# Warning: untested
-			arch="i386"
-		fi
-	elif [ "$(uname)" == "Darwin" ]; then
+		case "$(uname -m)" in
+		x86_64 | amd64) archs="amd64" ;;
+		aarch64 | arm64) archs="arm64 aarch64" ;;
+		*) return 1 ;;
+		esac
+		;;
+	Darwin)
 		os="osx"
-		arch="universal"
-	fi
-	# asdf-duckdb plugin does not support windows
-	echo "$GH_REPO/releases/download/v${version}/duckdb_cli-${os}-${arch}.zip"
+		archs="universal"
+		;;
+	*) return 1 ;;
+	esac
+
+	for arch in $archs; do
+		echo "$GH_REPO/releases/download/v${version}/duckdb_cli-${os}-${arch}.zip"
+	done
 }
