@@ -34,20 +34,36 @@ list_all_versions() {
 }
 
 download_release() {
-	local version filename urls url
+	local version download_path urls url filename
 	version="$1"
-	filename="$2"
+	download_path="$2"
 
 	urls="$(get_urls "$version")" || fail "unsupported platform: $(uname -s) $(uname -m)"
 
 	echo "* Downloading $TOOL_NAME release $version..."
 	for url in $urls; do
+		filename="$download_path/${url##*/}"
 		if curl "${curl_opts[@]}" -o "$filename" -C - "$url"; then
+			extract_release "$filename" "$download_path"
 			return 0
 		fi
 		rm -f "$filename"
 	done
 	fail "Could not download $TOOL_NAME $version. Tried: $(echo "$urls" | xargs echo)"
+}
+
+# The CLI ships as a .zip up to v1.x and as a .tar.gz from v2.0.0; both hold
+# the bare `duckdb` binary at the archive root.
+extract_release() {
+	local filename="$1"
+	local download_path="$2"
+
+	case "$filename" in
+	*.tar.gz) tar -xzf "$filename" -C "$download_path" || fail "Could not extract $filename" ;;
+	*.zip) unzip -q "$filename" -d "$download_path" || fail "Could not extract $filename" ;;
+	*) fail "Unknown archive format: $filename" ;;
+	esac
+	rm -f "$filename"
 }
 
 install_version() {
@@ -78,13 +94,19 @@ install_version() {
 # likely first. Returns non-zero on an unsupported platform.
 #
 # duckdb CLI release assets:
+#  name:
+#    v2.0.0 and later: duckdb-cli-<os>-<arch>.tar.gz
+#    before v2.0.0:    duckdb_cli-<os>-<arch>.zip
 #  os: linux | osx | windows
 #  arch:
 #    linux: amd64 | arm64 (named aarch64 before v1.3.0)
 #    osx: universal
 # asdf-duckdb does not support windows.
+#
+# Both naming schemes are emitted, the one matching the version's major first,
+# so a release that ships under the other scheme still installs.
 get_urls() {
-	local version os archs arch
+	local version os archs arch major names name
 	version="$1"
 
 	case "$(uname -s)" in
@@ -103,7 +125,17 @@ get_urls() {
 	*) return 1 ;;
 	esac
 
+	major="${version%%.*}"
+	if [[ "$major" =~ ^[0-9]+$ ]] && ((major >= 2)); then
+		names="duckdb-cli-%s-%s.tar.gz duckdb_cli-%s-%s.zip"
+	else
+		names="duckdb_cli-%s-%s.zip duckdb-cli-%s-%s.tar.gz"
+	fi
+
 	for arch in $archs; do
-		echo "$GH_REPO/releases/download/v${version}/duckdb_cli-${os}-${arch}.zip"
+		for name in $names; do
+			# shellcheck disable=SC2059 # the format comes from the fixed list above
+			printf "$GH_REPO/releases/download/v%s/$name\n" "$version" "$os" "$arch"
+		done
 	done
 }
